@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "epub-explorer"
+dynamic = ["version"]
+description = ""
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [{name = "Pol Alvarez", email = "pol.avms@gmail.com"}]
+keywords = ['nbdev']
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/kafkasl/epub-explorer"
+Documentation = "https://kafkasl.github.io/epub-explorer/"
+
+[project.entry-points.nbdev]
+epub_explorer = "epub_explorer._modidx:d"
+
+[tool.setuptools.dynamic]
+version = {attr = "epub_explorer.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["epub_explorer"]
+
+[tool.nbdev]
