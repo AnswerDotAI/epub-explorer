@@ -15,7 +15,12 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
 ]
-dependencies = []
+dependencies = [
+    "html2text>=2025.4.15",
+    "lxml>=6.0.4",
+    "pillow>=12.2.0",
+    "pyskills>=0.0.6",
+]
 
 [project.urls]
 Repository = "https://github.com/kafkasl/epub-explorer"
@@ -23,6 +28,9 @@ Documentation = "https://kafkasl.github.io/epub-explorer/"
 
 [project.entry-points.nbdev]
 epub_explorer = "epub_explorer._modidx:d"
+
+[project.scripts]
+epx = "epub_explorer.epx:epx"
 
 [tool.setuptools.dynamic]
 version = {attr = "epub_explorer.__version__"}

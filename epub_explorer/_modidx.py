@@ -20,4 +20,5 @@ d = { 'settings': { 'branch': 'main',
                                    'epub_explorer.epx.Epx.toc': ('epx.html#epx.toc', 'epub_explorer/epx.py'),
                                    'epub_explorer.epx._find_epub': ('epx.html#_find_epub', 'epub_explorer/epx.py'),
                                    'epub_explorer.epx._zp': ('epx.html#_zp', 'epub_explorer/epx.py'),
-                                   'epub_explorer.epx.epx': ('epx.html#epx', 'epub_explorer/epx.py')}}}
+                                   'epub_explorer.epx.epx': ('epx.html#epx', 'epub_explorer/epx.py'),
+                                   'epub_explorer.epx.epx_to_nbs': ('epx.html#epx_to_nbs', 'epub_explorer/epx.py')}}}
