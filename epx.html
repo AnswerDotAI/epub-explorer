@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="EPUB exploration skill for reading .epub books directly from the ZIP archive without extraction. It exposes the Epx class for opening a book, listing its table of contents, reading sections as markdown, listing > embedded images, and extracting images by internal EPUB path.">
+
+<title>epx – epub-explorer</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-de52dc3353fe04aa4d07820b7139bd46.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="epx – epub-explorer">
+<meta property="og:description" content="EPUB exploration skill for reading .epub books directly from the ZIP archive without extraction. It exposes the Epx class for opening a book, listing its table of contents, reading sections as markdown, listing > embedded images, and extracting images by internal EPUB path.">
+<meta property="og:image" content="https://kafkasl.github.io/epub-explorer/epx_files/figure-html/cell-29-output-1.png">
+<meta property="og:site_name" content="epub-explorer">
+<meta property="og:image:height" content="800">
+<meta property="og:image:width" content="531">
+<meta name="twitter:title" content="epx – epub-explorer">
+<meta name="twitter:description" content="EPUB exploration skill for reading .epub books directly from the ZIP archive without extraction. It exposes the Epx class for opening a book, listing its table of contents, reading sections as markdown, listing > embedded images, and extracting images by internal EPUB path.">
+<meta name="twitter:image" content="https://kafkasl.github.io/epub-explorer/epx_files/figure-html/cell-29-output-1.png">
+<meta name="twitter:image-height" content="800">
+<meta name="twitter:image-width" content="531">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">epub-explorer</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./epx.html">epx</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">epub-explorer</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./epx.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">epx</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a></li>
+  <li><a href="#the-epx-class" id="toc-the-epx-class" class="nav-link" data-scroll-target="#the-epx-class">The Epx class</a>
+  <ul class="collapse">
+  <li><a href="#epx" id="toc-epx" class="nav-link" data-scroll-target="#epx">Epx</a></li>
+  <li><a href="#container-opf-discovery" id="toc-container-opf-discovery" class="nav-link" data-scroll-target="#container-opf-discovery">Container &amp; OPF discovery</a></li>
+  <li><a href="#the-opf-metadata-manifest-spine" id="toc-the-opf-metadata-manifest-spine" class="nav-link" data-scroll-target="#the-opf-metadata-manifest-spine">The OPF: metadata, manifest &amp; spine</a></li>
+  <li><a href="#file-manifest" id="toc-file-manifest" class="nav-link" data-scroll-target="#file-manifest">File Manifest</a></li>
+  <li><a href="#spine" id="toc-spine" class="nav-link" data-scroll-target="#spine">Spine</a></li>
+  <li><a href="#wrapping-into-_load_opf" id="toc-wrapping-into-_load_opf" class="nav-link" data-scroll-target="#wrapping-into-_load_opf">Wrapping into <code>_load_opf</code></a></li>
+  <li><a href="#ncx-table-of-contents" id="toc-ncx-table-of-contents" class="nav-link" data-scroll-target="#ncx-table-of-contents">NCX table of contents</a></li>
+  <li><a href="#assembling-__init__" id="toc-assembling-__init__" class="nav-link" data-scroll-target="#assembling-__init__">Assembling <code>__init__</code></a></li>
+  <li><a href="#epx.__init__" id="toc-epx.__init__" class="nav-link" data-scroll-target="#epx.__init__">Epx.__init__</a></li>
+  <li><a href="#reading-xhtml-content" id="toc-reading-xhtml-content" class="nav-link" data-scroll-target="#reading-xhtml-content">Reading XHTML content</a></li>
+  <li><a href="#public-api" id="toc-public-api" class="nav-link" data-scroll-target="#public-api">Public API</a></li>
+  <li><a href="#epx.toc" id="toc-epx.toc" class="nav-link" data-scroll-target="#epx.toc">Epx.toc</a></li>
+  <li><a href="#epx.__repr__" id="toc-epx.__repr__" class="nav-link" data-scroll-target="#epx.__repr__">Epx.__repr__</a></li>
+  <li><a href="#epx.section" id="toc-epx.section" class="nav-link" data-scroll-target="#epx.section">Epx.section</a></li>
+  <li><a href="#epx.images" id="toc-epx.images" class="nav-link" data-scroll-target="#epx.images">Epx.images</a></li>
+  <li><a href="#epx.img" id="toc-epx.img" class="nav-link" data-scroll-target="#epx.img">Epx.img</a></li>
+  </ul></li>
+  <li><a href="#usage" id="toc-usage" class="nav-link" data-scroll-target="#usage">Usage</a>
+  <ul class="collapse">
+  <li><a href="#table-of-contents" id="toc-table-of-contents" class="nav-link" data-scroll-target="#table-of-contents">Table of contents</a></li>
+  <li><a href="#reading-a-section" id="toc-reading-a-section" class="nav-link" data-scroll-target="#reading-a-section">Reading a section</a></li>
+  <li><a href="#images" id="toc-images" class="nav-link" data-scroll-target="#images">Images</a></li>
+  </ul></li>
+  <li><a href="#cli" id="toc-cli" class="nav-link" data-scroll-target="#cli">CLI</a>
+  <ul class="collapse">
+  <li><a href="#epx-1" id="toc-epx-1" class="nav-link" data-scroll-target="#epx-1">epx</a></li>
+  </ul></li>
+  <li><a href="#export-to-nb" id="toc-export-to-nb" class="nav-link" data-scroll-target="#export-to-nb">Export to NB</a>
+  <ul class="collapse">
+  <li><a href="#epx_to_nbs" id="toc-epx_to_nbs" class="nav-link" data-scroll-target="#epx_to_nbs">epx_to_nbs</a></li>
+  </ul></li>
+  <li><a href="#pyskills" id="toc-pyskills" class="nav-link" data-scroll-target="#pyskills">Pyskills</a></li>
+  <li><a href="#usage-1" id="toc-usage-1" class="nav-link" data-scroll-target="#usage-1">Usage</a>
+  <ul class="collapse">
+  <li><a href="#installation" id="toc-installation" class="nav-link" data-scroll-target="#installation">Installation</a></li>
+  <li><a href="#how-to-use" id="toc-how-to-use" class="nav-link" data-scroll-target="#how-to-use">How to use</a></li>
+  <li><a href="#the-doc-function" id="toc-the-doc-function" class="nav-link" data-scroll-target="#the-doc-function">The <code>doc</code> function</a></li>
+  <li><a href="#the-allow-system" id="toc-the-allow-system" class="nav-link" data-scroll-target="#the-allow-system">The <code>allow</code> system</a></li>
+  </ul></li>
+  <li><a href="#creating-pyskills" id="toc-creating-pyskills" class="nav-link" data-scroll-target="#creating-pyskills">Creating pyskills</a>
+  <ul class="collapse">
+  <li><a href="#local-pyskills-without-packaging" id="toc-local-pyskills-without-packaging" class="nav-link" data-scroll-target="#local-pyskills-without-packaging">Local pyskills without packaging</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/kafkasl/epub-explorer/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="epx.html.md"><i class="bi bi-file-code"></i>CommonMark</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">epx</h1>
+</div>
+
+<div>
+  <div class="description">
+    EPUB exploration skill for reading <code>.epub</code> books directly from the ZIP archive without extraction. It exposes the <code>Epx</code> class for opening a book, listing its table of contents, reading sections as markdown, listing &gt; embedded images, and extracting images by internal EPUB path.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<section id="setup" class="level2">
+<h2 class="anchored" data-anchor-id="setup">Setup</h2>
+<div id="38efb3dd" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>_find_epub()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>'chuang-tzu.epub'</code></pre>
+</div>
+</div>
+<div id="1df08635" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>ls ..</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>_proc                  epub_explorer.egg-info pyproject.toml
+books                  LICENSE                README.md
+chuang-tzu.epub        MANIFEST.in            uv.lock
+epub_explorer          nbs</code></pre>
+</div>
+</div>
+</section>
+<section id="the-epx-class" class="level2">
+<h2 class="anchored" data-anchor-id="the-epx-class">The Epx class</h2>
+<hr>
+<section id="epx" class="level3">
+<h3 class="anchored" data-anchor-id="epx">Epx</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> Epx(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    args:VAR_POSITIONAL, kwargs:VAR_KEYWORD</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>EPUB Explorer - navigate epub files directly from ZIP.</em></p>
+<p>Epubs are zipped folders. In order to avoid extracting the contents we will have a zipfile reader in the base class that we can comfortably use.</p>
+<div id="7a926d76" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="at">@patch</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>:Epx, path: <span class="bu">str</span> <span class="op">=</span> <span class="va">None</span>):</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.path <span class="op">=</span> Path(_find_epub(path))</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.z <span class="op">=</span> zipfile.ZipFile(<span class="va">self</span>.path)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>._h <span class="op">=</span> html2text.HTML2Text()</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>._h.body_width <span class="op">=</span> <span class="dv">0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="container-opf-discovery" class="level3">
+<h3 class="anchored" data-anchor-id="container-opf-discovery">Container &amp; OPF discovery</h3>
+<p>Let’s create an instance and explore the epub’s internal structure:</p>
+<div id="36724c99" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> Epx()</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>b.z.namelist()[:<span class="dv">10</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>['mimetype',
+ 'META-INF/container.xml',
+ 'OEBPS/2384639977200309426_cover.jpg',
+ 'OEBPS/2384639977200309426_i_title.jpg',
+ 'OEBPS/2384639977200309426_i_title-image.jpg',
+ 'OEBPS/2384639977200309426_i_decoline.jpg',
+ 'OEBPS/2384639977200309426_i_decoline2.jpg',
+ 'OEBPS/pgepub.css',
+ 'OEBPS/0.css',
+ 'OEBPS/1.css']</code></pre>
+</div>
+</div>
+<p>Every epub starts with <code>META-INF/container.xml</code>, which points to the main <strong>Open Package Format</strong> (OPF) package file:</p>
+<div id="158f2022" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> etree.fromstring(b.z.read(<span class="st">'META-INF/container.xml'</span>))</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(etree.tostring(c, pretty_print<span class="op">=</span><span class="va">True</span>).decode())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0"&gt;
+  &lt;rootfiles&gt;
+    &lt;rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/&gt;
+  &lt;/rootfiles&gt;
+&lt;/container&gt;
+</code></pre>
+</div>
+</div>
+<p>The EPUB spec requires a fixed namespace for <code>container.xml</code>. We define it here so lxml can locate elements via XPath. Then we extract the OPF file path and its parent directory — all other paths in the EPUB are relative to this directory.</p>
+<div id="80645f24" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>ns <span class="op">=</span> {<span class="st">'c'</span>: <span class="st">'urn:oasis:names:tc:opendocument:xmlns:container'</span>}</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>opf_path <span class="op">=</span> c.find(<span class="st">'.//c:rootfile'</span>, ns).get(<span class="st">'full-path'</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>opf_dir <span class="op">=</span> <span class="bu">str</span>(Path(opf_path).parent)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>opf_path, opf_dir</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>('OEBPS/content.opf', 'OEBPS')</code></pre>
+</div>
+</div>
+</section>
+<section id="the-opf-metadata-manifest-spine" class="level3">
+<h3 class="anchored" data-anchor-id="the-opf-metadata-manifest-spine">The OPF: metadata, manifest &amp; spine</h3>
+<p>The OPF is the epub’s central manifest — it has metadata (title, authors), a file manifest, and a spine (reading order):</p>
+<div id="57706064" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>opf <span class="op">=</span> etree.fromstring(b.z.read(opf_path))</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>opf_ns <span class="op">=</span> {<span class="st">'opf'</span>: <span class="st">'http://www.idpf.org/2007/opf'</span>, <span class="st">'dc'</span>: <span class="st">'http://purl.org/dc/elements/1.1/'</span>}</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>meta <span class="op">=</span> opf.find(<span class="st">'opf:metadata'</span>, opf_ns)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>meta</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>&lt;Element {http://www.idpf.org/2007/opf}metadata&gt;</code></pre>
+</div>
+</div>
+<p><code>opf_ns</code> maps shorthand prefixes to the XML namespace URIs defined by the EPUB spec. It is used in the OPF file, as opposed to previous <code>ns</code> which is used in the <code>container.xml</code>.</p>
+<p>Most common prefixes: - <strong><code>dc</code></strong> — Dublin Core metadata (title, creator, language, etc.) - <strong><code>opf</code></strong> — the package/manifest structure - <strong><code>ncx</code></strong> — the table-of-contents file (used in EPUB 2, which is what this code uses for <code>toc()</code>) - <strong><code>xhtml</code></strong> — the actual content documents (the chapter HTML) - <strong><code>dcterms</code></strong> — extended Dublin Core terms (like <code>modified</code> date, more common in EPUB 3)</p>
+<p>These URIs are fixed by the standard (they’re identifiers, not web addresses). <code>findtext('dc:title', '', opf_ns)</code> uses XPath to find the first <code>&lt;title&gt;</code> element in the Dublin Core namespace and return its text, defaulting to <code>''</code> if missing.</p>
+<div id="8fda9058" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># epub title</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>meta.findtext(<span class="st">'dc:title'</span>, <span class="st">''</span>, opf_ns)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>'Chuang Tzu: Mystic, Moralist, and Social Reformer'</code></pre>
+</div>
+</div>
+<div id="88201507" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># list of authors</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>[e.text <span class="cf">for</span> e <span class="kw">in</span> meta.findall(<span class="st">'dc:creator'</span>, opf_ns)]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>['Zhuangzi']</code></pre>
+</div>
+</div>
+</section>
+<section id="file-manifest" class="level3">
+<h3 class="anchored" data-anchor-id="file-manifest">File Manifest</h3>
+<p>The <strong>manifest</strong> lists every file inside the EPUB package — content documents (XHTML), stylesheets, images, fonts, the NCX, etc. Each entry has a unique <code>id</code>, an <code>href</code> (path relative to the OPF file), and a <code>media-type</code>. We build a dict keyed by <code>id</code> so we can quickly look up any file’s path later.</p>
+<div id="c77511c5" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>its <span class="op">=</span> opf.findall(<span class="st">'.//opf:manifest/opf:item'</span>, opf_ns)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>L(its[:<span class="dv">4</span>]).attrgot(<span class="st">'attrib'</span>).<span class="bu">map</span>(<span class="bu">print</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>{'href': '2384639977200309426_cover.jpg', 'id': 'id-3690598161150158325', 'media-type': 'image/jpeg', 'properties': 'cover-image'}
+{'href': '2384639977200309426_i_title.jpg', 'id': 'img_images_i_title.jpg', 'media-type': 'image/jpeg'}
+{'href': '2384639977200309426_i_title-image.jpg', 'id': 'img_images_i_title-image.jpg', 'media-type': 'image/jpeg'}
+{'href': '2384639977200309426_i_decoline.jpg', 'id': 'img_images_i_decoline.jpg', 'media-type': 'image/jpeg'}</code></pre>
+</div>
+</div>
+<div id="43292d1d" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>manifest <span class="op">=</span> {</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    item.get(<span class="st">'id'</span>): {<span class="st">'href'</span>: item.get(<span class="st">'href'</span>), <span class="st">'media-type'</span>: item.get(<span class="st">'media-type'</span>)}</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> item <span class="kw">in</span> opf.findall(<span class="st">'.//opf:manifest/opf:item'</span>, opf_ns)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>L(manifest.items())[:<span class="dv">3</span>].<span class="bu">map</span>(<span class="bu">print</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>('id-3690598161150158325', {'href': '2384639977200309426_cover.jpg', 'media-type': 'image/jpeg'})
+('img_images_i_title.jpg', {'href': '2384639977200309426_i_title.jpg', 'media-type': 'image/jpeg'})
+('img_images_i_title-image.jpg', {'href': '2384639977200309426_i_title-image.jpg', 'media-type': 'image/jpeg'})</code></pre>
+</div>
+</div>
+</section>
+<section id="spine" class="level3">
+<h3 class="anchored" data-anchor-id="spine">Spine</h3>
+<p>The <strong>spine</strong> defines the book’s reading order as a sequence of <code>idref</code> values that point into the manifest. Walking the spine from first to last gives you the chapters in the order the author intended. This is what <code>section(idx)</code> indexes into.</p>
+<div id="37658ddb" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>spine_ids <span class="op">=</span> [ref.get(<span class="st">'idref'</span>) <span class="cf">for</span> ref <span class="kw">in</span> opf.findall(<span class="st">'.//opf:spine/opf:itemref'</span>, opf_ns)]</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>spine_ids[:<span class="dv">5</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>['coverpage-wrapper', 'pg-header', 'item4', 'item5', 'item6']</code></pre>
+</div>
+</div>
+</section>
+<section id="wrapping-into-_load_opf" class="level3">
+<h3 class="anchored" data-anchor-id="wrapping-into-_load_opf">Wrapping into <code>_load_opf</code></h3>
+<p>Now we can wrap all of that into <code>_load_opf</code>, which does everything we just explored — finds the OPF via <code>container.xml</code>, then extracts metadata, manifest, and spine:</p>
+<div id="f7b3d7a1" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>b._load_opf()</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(b.title, b.creators)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(L(b.manifest.values())[:<span class="dv">1</span>])</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(b.spine_ids[:<span class="dv">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Chuang Tzu: Mystic, Moralist, and Social Reformer ['Zhuangzi']
+[{'href': '2384639977200309426_cover.jpg', 'media-type': 'image/jpeg'}]
+['coverpage-wrapper']</code></pre>
+</div>
+</div>
+</section>
+<section id="ncx-table-of-contents" class="level3">
+<h3 class="anchored" data-anchor-id="ncx-table-of-contents">NCX table of contents</h3>
+<p>The NCX file maps file paths to human-readable chapter names. <code>_load_toc</code> finds it in the manifest, and <code>_parse_nav</code> walks its <code>navPoint</code> tree recursively (since TOCs can be nested):</p>
+<p>Zip entries are matched by exact name so we often find them named <code>toc.ncx</code> instead of <code>./toc.ncx</code>. We create the little helper <code>_zp</code> below to solve that when we do <code>Path(self.opf_dir) / ncx_item['href']</code> for example</p>
+<div id="6ab8b176" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>ncx_item <span class="op">=</span> first((v <span class="cf">for</span> v <span class="kw">in</span> b.manifest.values() </span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">if</span> v[<span class="st">'media-type'</span>] <span class="op">==</span> <span class="st">'application/x-dtbncx+xml'</span>))</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="bu">str</span>(Path(b.opf_dir) <span class="op">/</span> ncx_item[<span class="st">'href'</span>])</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>p</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>'OEBPS/toc.ncx'</code></pre>
+</div>
+</div>
+<div id="eabef128" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>b._load_toc()</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>L(b._toc_labels.items())[:<span class="dv">5</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>[('887456179853867412_59709-h-0.htm.xhtml', 'Chuang Tzŭ'), ('887456179853867412_59709-h-1.htm.xhtml', 'CONTENTS.'), ('887456179853867412_59709-h-2.htm.xhtml', 'Introduction.'), ('887456179853867412_59709-h-3.htm.xhtml', 'Note on the Philosophy of Chaps. i-vii.'), ('887456179853867412_59709-h-4.htm.xhtml', 'CHAPTER I.')]</code></pre>
+</div>
+</div>
+</section>
+<section id="assembling-__init__" class="level3">
+<h3 class="anchored" data-anchor-id="assembling-__init__">Assembling <code>__init__</code></h3>
+<p>Now we can update <code>__init__</code> to call both loading methods automatically:</p>
+<hr>
+</section>
+<section id="epx.__init__" class="level3">
+<h3 class="anchored" data-anchor-id="epx.__init__">Epx.__init__</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> <span class="fu">__init__</span>(</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>    path:<span class="bu">str</span><span class="op">=</span><span class="va">None</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Initialize self. See help(type(self)) for accurate signature.</em></p>
+<div id="c3049c88" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> Epx()</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>b.title, b.creators, <span class="bu">len</span>(b.spine_ids)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>('Chuang Tzu: Mystic, Moralist, and Social Reformer', ['Zhuangzi'], 42)</code></pre>
+</div>
+</div>
+</section>
+<section id="reading-xhtml-content" class="level3">
+<h3 class="anchored" data-anchor-id="reading-xhtml-content">Reading XHTML content</h3>
+<p>Epub content is XHTML. <code>_read_xhtml</code> reads a file from the ZIP, converts to markdown via <code>html2text</code>, then cleans up relative image paths and empty headings:</p>
+</section>
+<section id="public-api" class="level3">
+<h3 class="anchored" data-anchor-id="public-api">Public API</h3>
+<p><code>toc</code> lists all spine items with their TOC labels, <code>section</code> reads one by index, and <code>img</code> extracts embedded images:</p>
+<hr>
+</section>
+<section id="epx.toc" class="level3">
+<h3 class="anchored" data-anchor-id="epx.toc">Epx.toc</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> toc(</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="bu">str</span>:</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>List all spine items with their TOC labels, indexed for <code>section()</code>.</em></p>
+<div id="b1e14ee8" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> Epx()</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(b.toc())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>section  name
+      0  wrap0000.xhtml
+      1  Chuang Tzŭ
+      2  CONTENTS.
+      3  Introduction.
+      4  Note on the Philosophy of Chaps. i-vii.
+      5  CHAPTER I.
+      6  CHAPTER II.
+      7  CHAPTER III.
+      8  CHAPTER IV.
+      9  CHAPTER V.
+     10  CHAPTER VI.
+     11  CHAPTER VII.
+     12  CHAPTER VIII.
+     13  CHAPTER IX.
+     14  CHAPTER X.
+     15  CHAPTER XI.
+     16  CHAPTER XII.
+     17  CHAPTER XIII.
+     18  CHAPTER XIV.
+     19  CHAPTER XV.
+     20  CHAPTER XVI.
+     21  CHAPTER XVII.
+     22  CHAPTER XVIII.
+     23  CHAPTER XIX.
+     24  CHAPTER XX.
+     25  CHAPTER XXI.
+     26  CHAPTER XXII.
+     27  CHAPTER XXIII.
+     28  CHAPTER XXIV.
+     29  CHAPTER XXV.
+     30  CHAPTER XXVI.
+     31  CHAPTER XXVII.
+     32  CHAPTER XXVIII.
+     33  CHAPTER XXIX.
+     34  CHAPTER XXX.
+     35  CHAPTER XXXI.
+     36  CHAPTER XXXII.
+     37  CHAPTER XXXIII.
+     38  INDEX
+     39  ERRATA AND ADDENDA
+     40  FOOTNOTES:
+     41  THE FULL PROJECT GUTENBERG™ LICENSE</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="epx.__repr__" class="level3">
+<h3 class="anchored" data-anchor-id="epx.__repr__">Epx.__repr__</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> <span class="fu">__repr__</span>(</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Return repr(self).</em></p>
+<div id="d146e4b9" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>b</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>Chuang Tzu: Mystic, Moralist, and Social Reformer by Zhuangzi (42 sections)</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="epx.section" class="level3">
+<h3 class="anchored" data-anchor-id="epx.section">Epx.section</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> section(</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>    idx:<span class="bu">int</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="bu">str</span>:</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Read spine section <code>idx</code> and return as markdown.</em></p>
+<div id="ad43282b" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(b.section(<span class="dv">5</span>)[:<span class="dv">200</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>_Chuang Tzŭ._
+
+![](2384639977200309426_i_decoline.jpg)
+
+## CHAPTER I.
+
+Transcendental Bliss.
+
+_Argument_ :—Space infinite—Time infinite—Relativity of magnitudes, physical and moral—The magnitude absol</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="epx.images" class="level3">
+<h3 class="anchored" data-anchor-id="epx.images">Epx.images</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> images(</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="bu">list</span>:</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>List image hrefs available in the book (OPF-relative paths for <code>img()</code>).</em></p>
+<div id="b7989204" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>b.images()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>['2384639977200309426_cover.jpg',
+ '2384639977200309426_i_title.jpg',
+ '2384639977200309426_i_title-image.jpg',
+ '2384639977200309426_i_decoline.jpg',
+ '2384639977200309426_i_decoline2.jpg']</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="epx.img" class="level3">
+<h3 class="anchored" data-anchor-id="epx.img">Epx.img</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> img(</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>    path:<span class="bu">str</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span>Image:</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Extract image by OPF-relative href (use one of <code>images()</code>).</em></p>
+<div id="6d5ced49" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>b.img(b.images()[<span class="dv">0</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="epx_files/figure-html/cell-29-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="usage" class="level2">
+<h2 class="anchored" data-anchor-id="usage">Usage</h2>
+<p><code>Epx</code> reads epub files directly from ZIP, with no extraction needed. It auto-discovers a single <code>.epub</code> in the current directory:</p>
+<section id="table-of-contents" class="level3">
+<h3 class="anchored" data-anchor-id="table-of-contents">Table of contents</h3>
+<p><code>toc()</code> maps spine indices to their TOC labels — these indices are what you pass to <code>read</code>:</p>
+<div id="d1f1b484" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> Epx()</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(b.toc()[:<span class="dv">300</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>section  name
+      0  wrap0000.xhtml
+      1  Chuang Tzŭ
+      2  CONTENTS.
+      3  Introduction.
+      4  Note on the Philosophy of Chaps. i-vii.
+      5  CHAPTER I.
+      6  CHAPTER II.
+      7  CHAPTER III.
+      8  CHAPTER IV.
+      9  CHAPTER V.
+     10  CHAPTER VI.
+     11  CHAPTER VII.
+    </code></pre>
+</div>
+</div>
+</section>
+<section id="reading-a-section" class="level3">
+<h3 class="anchored" data-anchor-id="reading-a-section">Reading a section</h3>
+<p><code>section</code> converts any spine section to markdown:</p>
+<div id="023bfa72" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(b.section(<span class="dv">5</span>)[:<span class="dv">100</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>_Chuang Tzŭ._
+
+![](2384639977200309426_i_decoline.jpg)
+
+## CHAPTER I.
+
+Transcendental Bliss.
+
+_Argum</code></pre>
+</div>
+</div>
+</section>
+<section id="images" class="level3">
+<h3 class="anchored" data-anchor-id="images">Images</h3>
+<p>Images can be extracted by their epub-internal path (as shown in markdown image links from <code>read</code>):</p>
+<div id="61e79977" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>b.images()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+</section>
+<section id="cli" class="level2">
+<h2 class="anchored" data-anchor-id="cli">CLI</h2>
+<p><code>@call_parse</code> exposes the same functionality from the command line:</p>
+<hr>
+<section id="epx-1" class="level3">
+<h3 class="anchored" data-anchor-id="epx-1">epx</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> epx(</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>    section:<span class="bu">int</span><span class="op">=</span><span class="va">None</span>, epub:<span class="bu">str</span><span class="op">=</span><span class="va">None</span></span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>EPUB Explorer - navigate epub files with Unix-friendly output.</em></p>
+<div id="5c410cca" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> .. <span class="kw">&amp;&amp;</span> <span class="ex">pip</span> install <span class="at">-e</span> .</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Obtaining file:///Users/pengren/go/github.com/AnswerDotAI/epub-explorer
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: html2text&gt;=2025.4.15 in /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages (from epub-explorer==0.0.1) (2025.4.15)
+Requirement already satisfied: lxml&gt;=6.0.4 in /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages (from epub-explorer==0.0.1) (6.0.4)
+Requirement already satisfied: pillow&gt;=12.2.0 in /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages (from epub-explorer==0.0.1) (12.2.0)
+Requirement already satisfied: pyskills&gt;=0.0.6 in /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages (from epub-explorer==0.0.1) (0.0.6)
+Requirement already satisfied: fastcore&gt;=1.12.33 in /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages (from pyskills&gt;=0.0.6-&gt;epub-explorer==0.0.1) (1.12.39)
+Building wheels for collected packages: epub-explorer
+  Building editable for epub-explorer (pyproject.toml): started
+  Building editable for epub-explorer (pyproject.toml): finished with status 'done'
+  Created wheel for epub-explorer: filename=epub_explorer-0.0.1-0.editable-py3-none-any.whl size=8052 sha256=ecb6f9e60e99ce240fb0c18d8260119adf6e9479970785baa155f278be20b98a
+  Stored in directory: /private/var/folders/29/d2vp2sq93sb8j3k3fnkw805r0000gn/T/pip-ephem-wheel-cache-5q4j_5d7/wheels/e6/a6/85/44af95c67de73c4ac71d425c3e726608ccdcd8b93be83b72a1
+Successfully built epub-explorer
+Installing collected packages: epub-explorer
+  Attempting uninstall: epub-explorer
+    Found existing installation: epub-explorer 0.0.1
+    Uninstalling epub-explorer-0.0.1:
+      Successfully uninstalled epub-explorer-0.0.1
+Successfully installed epub-explorer-0.0.1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-bold">[</span><span class="ansi-blue-fg">notice</span><span class="ansi-bold">]</span> A new release of pip is available: <span class="ansi-red-fg">2
+5.3</span> -&gt; <span class="ansi-green-fg">26.0.1</span>
+
+<span class="ansi-bold">[</span><span class="ansi-blue-fg">notice</span><span class="ansi-bold">]</span> To upda
+te, run: <span class="ansi-green-fg">pip3 install --upgrade pip</span>
+</pre>
+</div>
+</div>
+</div>
+<div id="60cd48d4" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>epx <span class="op">--</span><span class="bu">help</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>usage: epx [-h] [--section SECTION] [--epub EPUB]
+
+EPUB Explorer - navigate epub files with Unix-friendly output.
+
+options:
+  -h, --help         show this help message and exit
+  --section SECTION
+  --epub EPUB</code></pre>
+</div>
+</div>
+<div id="8b7bc76a" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="ex">epx</span> <span class="at">--epub</span> ../chuang-tzu.epub</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>section  name
+      0  wrap0000.xhtml
+      1  Chuang Tzŭ
+      2  CONTENTS.
+      3  Introduction.
+      4  Note on the Philosophy of Chaps. i-vii.
+      5  CHAPTER I.
+      6  CHAPTER II.
+      7  CHAPTER III.
+      8  CHAPTER IV.
+      9  CHAPTER V.
+     10  CHAPTER VI.
+     11  CHAPTER VII.
+     12  CHAPTER VIII.
+     13  CHAPTER IX.
+     14  CHAPTER X.
+     15  CHAPTER XI.
+     16  CHAPTER XII.
+     17  CHAPTER XIII.
+     18  CHAPTER XIV.
+     19  CHAPTER XV.
+     20  CHAPTER XVI.
+     21  CHAPTER XVII.
+     22  CHAPTER XVIII.
+     23  CHAPTER XIX.
+     24  CHAPTER XX.
+     25  CHAPTER XXI.
+     26  CHAPTER XXII.
+     27  CHAPTER XXIII.
+     28  CHAPTER XXIV.
+     29  CHAPTER XXV.
+     30  CHAPTER XXVI.
+     31  CHAPTER XXVII.
+     32  CHAPTER XXVIII.
+     33  CHAPTER XXIX.
+     34  CHAPTER XXX.
+     35  CHAPTER XXXI.
+     36  CHAPTER XXXII.
+     37  CHAPTER XXXIII.
+     38  INDEX
+     39  ERRATA AND ADDENDA
+     40  FOOTNOTES:
+     41  THE FULL PROJECT GUTENBERG™ LICENSE</code></pre>
+</div>
+</div>
+<div id="65529eba" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>epx <span class="op">--</span>epub chuang<span class="op">-</span>tzu.epub <span class="op">--</span>section <span class="dv">2</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>##  _CONTENTS._
+
+| _Page_  
+---|---  
+Introduction | [v](887456179853867412_59709-h-2.htm.xhtml#Page_v)  
+Note on the Philosophy of Chuang Tzŭ, _by Canon Moore_ | [xviii](887456179853867412_59709-h-3.htm.xhtml#Page_xviii)  
+CHAPTER| I | —Transcendental Bliss | [1](887456179853867412_59709-h-4.htm.xhtml#Page_1)  
+"| II | —The Identity of Contraries | [12](887456179853867412_59709-h-5.htm.xhtml#Page_12)  
+"| III | —Nourishment of the Soul | [33](887456179853867412_59709-h-6.htm.xhtml#Page_33)  
+"| IV | —Man among Men | [38](887456179853867412_59709-h-7.htm.xhtml#Page_38)  
+"| V | —The Evidence of Virtue Complete | [56](887456179853867412_59709-h-8.htm.xhtml#Page_56)  
+"| VI | —The Great Supreme | [68](887456179853867412_59709-h-9.htm.xhtml#Page_68)  
+"| VII | —How to Govern | [91](887456179853867412_59709-h-10.htm.xhtml#Page_91)  
+"| VIII | —Joined Toes | [99](887456179853867412_59709-h-11.htm.xhtml#Page_99)  
+"| IX | —Horses' Hoofs | [106](887456179853867412_59709-h-12.htm.xhtml#Page_106)  
+"| X | —Opening Trunks | [110](887456179853867412_59709-h-13.htm.xhtml#Page_110)  
+"| XI | —On Letting Alone | [119](887456179853867412_59709-h-14.htm.xhtml#Page_119)  
+"| XII | —The Universe | [135](887456179853867412_59709-h-15.htm.xhtml#Page_135)  
+"| XIII | —The Tao of God | [157](887456179853867412_59709-h-16.htm.xhtml#Page_157)  
+"| XIV | —The Circling Sky | [173](887456179853867412_59709-h-17.htm.xhtml#Page_173)  
+"| XV | —Self-Conceit | [190](887456179853867412_59709-h-18.htm.xhtml#Page_190)  
+"| XVI | —Exercise of Faculties | [195](887456179853867412_59709-h-19.htm.xhtml#Page_195)  
+"| XVII | —Autumn Floods | [200](887456179853867412_59709-h-20.htm.xhtml#Page_200)  
+"| XVIII | —Perfect Happiness | [220](887456179853867412_59709-h-21.htm.xhtml#Page_220)  
+"| XIX | —The Secret of Life | [229](887456179853867412_59709-h-22.htm.xhtml#Page_229)  
+"| XX | —Mountain Trees | [245](887456179853867412_59709-h-23.htm.xhtml#Page_245)  
+"| XXI | —T'ien Tzŭ Fang | [261](887456179853867412_59709-h-24.htm.xhtml#Page_261)  
+"| XXII | —Knowledge travels North | [276](887456179853867412_59709-h-25.htm.xhtml#Page_276)  
+"| XXIII | —Kêng Sang Ch'u | [294](887456179853867412_59709-h-26.htm.xhtml#Page_294)  
+"| XXIV | —Hsü Wu Kuei | [311](887456179853867412_59709-h-27.htm.xhtml#Page_311)  
+"| XXV | —Tsê Yang | [335](887456179853867412_59709-h-28.htm.xhtml#Page_335)  
+"| XXVI | —Contingencies | [352](887456179853867412_59709-h-29.htm.xhtml#Page_352)  
+"| XXVII | —Language | [363](887456179853867412_59709-h-30.htm.xhtml#Page_363)  
+"| XXVIII | —On Declining Power | [370](887456179853867412_59709-h-31.htm.xhtml#Page_370)  
+"| XXIX | —Robber Chê | [387](887456179853867412_59709-h-32.htm.xhtml#Page_387)  
+"| XXX | —On Swords | [407](887456179853867412_59709-h-33.htm.xhtml#Page_407)  
+"| XXXI | —The Old Fisherman | [413](887456179853867412_59709-h-34.htm.xhtml#Page_413)  
+"| XXXII | —Lieh Tzŭ | [423](887456179853867412_59709-h-35.htm.xhtml#Page_423)  
+"| XXXIII | —The Empire | [437](887456179853867412_59709-h-36.htm.xhtml#Page_437)  
+Index | [455](887456179853867412_59709-h-37.htm.xhtml#Page_455)  
+Errata and Addenda | [466](887456179853867412_59709-h-38.htm.xhtml#Page_466)  
+  
+* * *</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="export-to-nb" class="level2">
+<h2 class="anchored" data-anchor-id="export-to-nb">Export to NB</h2>
+<hr>
+<section id="epx_to_nbs" class="level3">
+<h3 class="anchored" data-anchor-id="epx_to_nbs">epx_to_nbs</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> epx_to_nbs(</span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>    book:Epx, dest:<span class="bu">str</span><span class="op">=</span><span class="st">'nbs'</span></span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Export each spine section of <code>book</code> as a separate notebook under <code>dest</code>.</em></p>
+<div id="abaf5ae4" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>rm <span class="op">-</span>rf cz</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="69c4c7c5" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>epx_to_nbs(b, <span class="st">'cz'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="da75ac46" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> Epx(<span class="st">'../chuang-tzu.epub'</span>)</span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>epx_to_nbs(b, <span class="st">'cz'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="30e2972f" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>ls cz</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>000_wrap0000_xhtml.ipynb
+001_chuang_tz.ipynb
+002_contents.ipynb
+003_introduction.ipynb
+004_note_on_the_philosophy_of_chaps_i_vii.ipynb
+005_chapter_i.ipynb
+006_chapter_ii.ipynb
+007_chapter_iii.ipynb
+008_chapter_iv.ipynb
+009_chapter_v.ipynb
+010_chapter_vi.ipynb
+011_chapter_vii.ipynb
+012_chapter_viii.ipynb
+013_chapter_ix.ipynb
+014_chapter_x.ipynb
+015_chapter_xi.ipynb
+016_chapter_xii.ipynb
+017_chapter_xiii.ipynb
+018_chapter_xiv.ipynb
+019_chapter_xv.ipynb
+020_chapter_xvi.ipynb
+021_chapter_xvii.ipynb
+022_chapter_xviii.ipynb
+023_chapter_xix.ipynb
+024_chapter_xx.ipynb
+025_chapter_xxi.ipynb
+026_chapter_xxii.ipynb
+027_chapter_xxiii.ipynb
+028_chapter_xxiv.ipynb
+029_chapter_xxv.ipynb
+030_chapter_xxvi.ipynb
+031_chapter_xxvii.ipynb
+032_chapter_xxviii.ipynb
+033_chapter_xxix.ipynb
+034_chapter_xxx.ipynb
+035_chapter_xxxi.ipynb
+036_chapter_xxxii.ipynb
+037_chapter_xxxiii.ipynb
+038_index.ipynb
+039_errata_and_addenda.ipynb
+040_footnotes.ipynb
+041_the_full_project_gutenberg_license.ipynb</code></pre>
+</div>
+</div>
+<div id="63892c87" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb68"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>head <span class="op">-</span>n <span class="dv">20</span> cz<span class="op">/</span><span class="dv">00</span><span class="er">5_chapter_i</span>.ipynb</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "1eb61dcd",
+   "metadata": {},
+   "source": [
+    "_Chuang Tzŭ._"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "28bd07c1",
+   "metadata": {},
+   "source": [
+    "![](2384639977200309426_i_decoline.jpg)"
+   ]
+  },
+  {
+   "cell_type": "markdown",</code></pre>
+</div>
+</div>
+<p>that looks great! how do we add it to the pyskills now?</p>
+<section id="reply" class="level5">
+<h5 class="anchored" data-anchor-id="reply">🤖Reply🤖<!-- SOLVEIT_SEPARATOR_7f3a9b2c --></h5>
+<p>Two things to do:</p>
+<ol type="1">
+<li><strong>Export it</strong> — add <code>#| export</code> to the top of the <code>epx_to_nbs</code> cell so <code>nbdev_export</code> includes it in the module</li>
+<li><strong>Allow it</strong> — update your allow cell to register it:</li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb70"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pyskills.core <span class="im">import</span> allow</span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>allow({Epx: ...}, epx_to_nbs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Then re-run <code>nbdev_export</code> and <code>pip install -e .</code> to pick up the changes. After that, <code>doc(epub_explorer.epx)</code> should show <code>epx_to_nbs</code> alongside <code>Epx</code>.</p>
+</section>
+</section>
+</section>
+<section id="pyskills" class="level2">
+<h2 class="anchored" data-anchor-id="pyskills">Pyskills</h2>
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<p>pyskills is a plugin system that lets Python packages register “skills” (units of LLM-usable functionality) via standard <a href="https://packaging.python.org/en/latest/specifications/entry-points/">entry points</a>. An LLM host (e.g.&nbsp;solveit) discovers available pyskills without importing them, reads lightweight descriptions via AST inspection, and selectively loads chosen pyskills into context using standard imports.</p>
+<p>It includes <a href="https://AnswerDotAI.github.io/pyskills/core.html#list_pyskills"><code>list_pyskills()</code></a> for discovery, <a href="https://AnswerDotAI.github.io/pyskills/core.html#doc"><code>doc()</code></a> for rendering module/class/function documentation in LLM-friendly format, and an <a href="https://AnswerDotAI.github.io/pyskills/core.html#allow"><code>allow()</code></a> system for registering safe callable access in sandboxed environments. Skills can be installed as regular packages with entry points, or dropped into an XDG data directory for quick local use.</p>
+<p>pyskills shares the progressive disclosure philosophy of the <a href="https://agentskills.io/specification">Agent Skills</a> specification: both separate lightweight discovery metadata from full instructions loaded on demand. However, where Agent Skills uses a file-system convention (<code>SKILL.md</code> with YAML frontmatter, <code>scripts/</code>, <code>references/</code> directories), pyskills takes a Python-native approach: pyskills are regular Python modules discovered via standard entry points, documented with docstrings, and loaded with <code>import</code>. This means pyskills are directly executable, come with auto-generated structured documentation via <a href="https://AnswerDotAI.github.io/pyskills/core.html#doc"><code>doc()</code></a>, and include a sandboxing layer via <a href="https://AnswerDotAI.github.io/pyskills/core.html#allow"><code>allow()</code></a> for safe execution. This makes pyskills a superset that covers discovery, documentation, execution, and security in one system.</p>
+</section>
+<section id="usage-1" class="level2">
+<h2 class="anchored" data-anchor-id="usage-1">Usage</h2>
+<section id="installation" class="level3">
+<h3 class="anchored" data-anchor-id="installation">Installation</h3>
+<p>Install the latest from <a href="https://pypi.org/project/pyskills/">pypi</a></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb71"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pip install pyskills</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="how-to-use" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-use">How to use</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb72"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pyskills <span class="im">import</span> <span class="op">*</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Discover what pyskills are available. This works without importing any pyskill modules:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb73"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>list_pyskills()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre><code>{'pyskills.skill': 'Pyskills is a plugin system allowing Python packages to register "skills" — units of LLM-usable functionality — via standard Python entry points. An LLM host (e.g. solveit) discovers available pyskills without importing them, reads lightweight descriptions via AST inspection, and selectively loads chosen pyskills into context using standard imports.',
+ 'test.skill': 'A test pyskill.'}</code></pre>
+</section>
+<section id="the-doc-function" class="level3">
+<h3 class="anchored" data-anchor-id="the-doc-function">The <a href="https://AnswerDotAI.github.io/pyskills/core.html#doc"><code>doc</code></a> function</h3>
+<p>Once you’ve found a pyskill you want to use, import its module using standard python syntax:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb75"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pyskills.skill</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Use <a href="https://AnswerDotAI.github.io/pyskills/core.html#doc"><code>doc()</code></a> to read its full documentation. <a href="https://AnswerDotAI.github.io/pyskills/core.html#doc"><code>doc()</code></a> works on modules, classes, and functions, rendering LLM-friendly output in each case.</p>
+<p>For a <strong>module</strong>, <a href="https://AnswerDotAI.github.io/pyskills/core.html#doc"><code>doc</code></a> shows all public classes and functions with their signatures and first docstring line:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb76"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(doc(pyskills.skill)[<span class="op">-</span><span class="dv">500</span>:])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre><code>illTestClass)
+    doc(pyskills.skill.skill_test_func)
+
+## Creating pyskills
+
+`from pyskills import createskill; doc(createskill)` for how to build and register your own pyskill modules, including the allow/policy system."""
+
+def allow(*c, allow_policy=None): ...  # Add all items in `c` to `__pytools__`, optionally constrained by `allow_policy`
+class SkillTestClass(str): ...  # Some class.
+def skill_test_func(x: int = 0) -&gt; str: ...  # A test function
+
+allows:
+- allow(skill_test_func, SkillTestClass)</code></pre>
+<p>For a <strong>function</strong>, <a href="https://AnswerDotAI.github.io/pyskills/core.html#doc"><code>doc</code></a> renders the full signature with parameter comments (docments):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb78"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(doc(pyskills.skill.skill_test_func))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre><code>def skill_test_func(
+    x:int=0, # the input
+)-&gt;str: # the output
+"""A test function"""</code></pre>
+<p>For a <strong>class</strong>, <a href="https://AnswerDotAI.github.io/pyskills/core.html#doc"><code>doc</code></a> shows the class hierarchy, docstring, <code>__init__</code> signature, and all public methods with their first docstring line:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb80"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(doc(pyskills.skill.SkillTestClass))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre><code>class SkillTestClass(str):
+    """Some class.
+    More info about it."""
+    def __init__(self): ...
+    def f(self, x: int = 0) -&gt; str: ...  # A test method
+    @property
+    def g(self) -&gt; str: ...  # A test prop</code></pre>
+</section>
+<section id="the-allow-system" class="level3">
+<h3 class="anchored" data-anchor-id="the-allow-system">The <a href="https://AnswerDotAI.github.io/pyskills/core.html#allow"><code>allow</code></a> system</h3>
+<p>When pyskills run in a sandboxed environment like <a href="https://github.com/AnswerDotAI/safepyrun">safepyrun</a>, they need to declare which functions and methods are safe for an LLM to call. safepyrun uses <a href="https://restrictedpython.readthedocs.io/">RestrictedPython</a> to intercept every attribute access and function call, checking each one against an allowlist stored in the <code>__pytools__</code> registry. The <a href="https://AnswerDotAI.github.io/pyskills/core.html#allow"><code>allow()</code></a> function is how pyskills register their safe callables into that registry.</p>
+<p>You can allow individual functions, all public methods of a type, or specific methods:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb82"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Allow specific methods on a type</span></span>
+<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a>allow({<span class="bu">str</span>: [<span class="st">'zfill'</span>]})</span>
+<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-4"><a href="#cb82-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Allow all public methods on a type</span></span>
+<span id="cb82-5"><a href="#cb82-5" aria-hidden="true" tabindex="-1"></a>allow({<span class="bu">list</span>: ...})</span>
+<span id="cb82-6"><a href="#cb82-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-7"><a href="#cb82-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Allow a callable function</span></span>
+<span id="cb82-8"><a href="#cb82-8" aria-hidden="true" tabindex="-1"></a>allow(list_pyskills)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Skill modules typically call <a href="https://AnswerDotAI.github.io/pyskills/core.html#allow"><code>allow()</code></a> at module level, so permissions are registered automatically when the pyskill is imported. For instance, when <code>safepyrun</code>’s <code>RunPython</code> executes LLM-generated code, it checks every call against <code>__pytools__</code>. If a function isn’t registered, the call is blocked.</p>
+<p>The <code>pyskills.skill</code> module used in the examples above is itself registered as a pyskill entry point. It ships with pyskills both as a working sample and as a self-documenting pyskill that explains the system itself. Its docstring’s “Creating pyskills” section cross-references <code>pyskills.createskill</code>, a companion module (not registered as an entry point, so not shown in <a href="https://AnswerDotAI.github.io/pyskills/core.html#list_pyskills"><code>list_pyskills()</code></a>) that documents how to build your own pyskills:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb83"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pyskills <span class="im">import</span> createskill</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb84"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(doc(createskill)[:<span class="dv">300</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre><code>module pyskills.createskill:
+"""How to create a pyskills module.
+
+A pyskill is a standard Python module that registers itself via entry points so LLM hosts can discover and load it.
+
+## 1. Create your module
+
+Your module needs:
+- A docstring — first paragraph is the short description shown durin</code></pre>
+</section>
+</section>
+<section id="creating-pyskills" class="level2">
+<h2 class="anchored" data-anchor-id="creating-pyskills">Creating pyskills</h2>
+<p>A pyskill is a standard Python module that registers itself via entry points so LLM hosts can discover and load it. Your module needs three things:</p>
+<ul>
+<li><strong>A docstring</strong>: the first paragraph is the short description shown during discovery via <a href="https://AnswerDotAI.github.io/pyskills/core.html#list_pyskills"><code>list_pyskills()</code></a>; the rest is the detailed documentation the LLM reads after loading.</li>
+<li><strong><code>__all__</code></strong>: lists the symbols available to the LLM.</li>
+<li><strong><a href="https://AnswerDotAI.github.io/pyskills/core.html#allow"><code>allow()</code></a> calls</strong>: declares what the LLM is permitted to call in sandboxed environments.</li>
+</ul>
+<p>Here’s a minimal example:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb86"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="co">'''Short description for discovery.</span></span>
+<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb86-3"><a href="#cb86-3" aria-hidden="true" tabindex="-1"></a><span class="co">Detailed docs read by the LLM after import.'''</span></span>
+<span id="cb86-4"><a href="#cb86-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb86-5"><a href="#cb86-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pyskills.core <span class="im">import</span> allow</span>
+<span id="cb86-6"><a href="#cb86-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb86-7"><a href="#cb86-7" aria-hidden="true" tabindex="-1"></a><span class="va">__all__</span> <span class="op">=</span> [<span class="st">'my_func'</span>, <span class="st">'MyClass'</span>]</span>
+<span id="cb86-8"><a href="#cb86-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb86-9"><a href="#cb86-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> my_func(x: <span class="bu">int</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:</span>
+<span id="cb86-10"><a href="#cb86-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Does something useful"</span></span>
+<span id="cb86-11"><a href="#cb86-11" aria-hidden="true" tabindex="-1"></a>    ...</span>
+<span id="cb86-12"><a href="#cb86-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb86-13"><a href="#cb86-13" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> MyClass:</span>
+<span id="cb86-14"><a href="#cb86-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">"A useful class"</span></span>
+<span id="cb86-15"><a href="#cb86-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> method(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:</span>
+<span id="cb86-16"><a href="#cb86-16" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Does something"</span></span>
+<span id="cb86-17"><a href="#cb86-17" aria-hidden="true" tabindex="-1"></a>        ...</span>
+<span id="cb86-18"><a href="#cb86-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb86-19"><a href="#cb86-19" aria-hidden="true" tabindex="-1"></a>allow(my_func, {MyClass: ...})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>To register your module as a discoverable pyskill, add an entry point in your <code>pyproject.toml</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb87"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[project.entry-points.pyskills]</span></span>
+<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a><span class="dt">my_skill</span> <span class="op">=</span> <span class="st">"mypackage.mymodule"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The key is an arbitrary name; the value is the module path. After installing the package, <a href="https://AnswerDotAI.github.io/pyskills/core.html#list_pyskills"><code>list_pyskills()</code></a> will include your pyskill automatically.</p>
+<p>For full details on creating pyskills, including allow policies for write-guarded operations, see <code>doc(createskill)</code> after importing it as shown above.</p>
+<section id="local-pyskills-without-packaging" class="level3">
+<h3 class="anchored" data-anchor-id="local-pyskills-without-packaging">Local pyskills without packaging</h3>
+<p>The entry point approach above requires installing a package. But sometimes you want to create pyskills quickly without a full package: personal utility pyskills, or pyskills shared across multiple projects that each use isolated environments (like <a href="https://docs.astral.sh/uv/">uv</a> venvs).</p>
+<p>pyskills provides an <a href="https://specifications.freedesktop.org/basedir-spec/latest/">XDG</a>-based pyskills directory for this. When you first <code>import pyskills</code>, it creates a directory at your platform’s XDG data home (typically <code>~/.local/share/pyskills/</code>) and writes a <code>.pth</code> file into <code>site-packages</code>. This <code>.pth</code> file tells Python to add the pyskills directory to <code>sys.path</code> on startup, so any modules placed there are importable as standard Python modules without any special import machinery. This works across all Python environments on your system, even separate uv projects with isolated venvs.</p>
+<p>You can check where this directory is (although you can use the functions below without needing to know):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb88"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>pyskills_dir()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre><code>Path('/Users/jhoward/.local/share/pyskills')</code></pre>
+<p>You can drop pyskill modules directly into this directory, or use <a href="https://AnswerDotAI.github.io/pyskills/core.html#register_pyskill"><code>register_pyskill</code></a> to create one programmatically:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb90"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>register_pyskill(<span class="st">'my_local.skill'</span>, docstr<span class="op">=</span><span class="st">'A quick local pyskill.'</span>, code<span class="op">=</span><span class="st">'''</span></span>
+<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a><span class="st">from pyskills.core import allow</span></span>
+<span id="cb90-3"><a href="#cb90-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb90-4"><a href="#cb90-4" aria-hidden="true" tabindex="-1"></a><span class="st">__all__ = ['hello']</span></span>
+<span id="cb90-5"><a href="#cb90-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb90-6"><a href="#cb90-6" aria-hidden="true" tabindex="-1"></a><span class="st">def hello(name: str) -&gt; str:</span></span>
+<span id="cb90-7"><a href="#cb90-7" aria-hidden="true" tabindex="-1"></a><span class="st">    "Greet someone"</span></span>
+<span id="cb90-8"><a href="#cb90-8" aria-hidden="true" tabindex="-1"></a><span class="st">    return f"Hello, </span><span class="sc">{name}</span><span class="st">!"</span></span>
+<span id="cb90-9"><a href="#cb90-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb90-10"><a href="#cb90-10" aria-hidden="true" tabindex="-1"></a><span class="st">allow(hello)</span></span>
+<span id="cb90-11"><a href="#cb90-11" aria-hidden="true" tabindex="-1"></a><span class="st">'''</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This writes the module file into the XDG pyskills directory and creates a minimal entry point, so the pyskill immediately appears in <a href="https://AnswerDotAI.github.io/pyskills/core.html#list_pyskills"><code>list_pyskills()</code></a>.</p>
+<p>You can also manage pyskills with <a href="https://AnswerDotAI.github.io/pyskills/core.html#enable_pyskill"><code>enable_pyskill</code></a> and <a href="https://AnswerDotAI.github.io/pyskills/core.html#disable_pyskill"><code>disable_pyskill</code></a> to toggle their visibility without deleting files, or use <a href="https://AnswerDotAI.github.io/pyskills/core.html#disable_pyskill"><code>disable_pyskill</code></a> to remove one entirely.</p>
+<div id="b6fe19b1" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb91"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>nb <span class="op">=</span> <span class="bu">open</span>(<span class="st">'../../aai-ws/pyskills/nbs/01_edit.ipynb'</span>).read()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>I want to expose the class itself, how can we do it in this notebook? Please use this dialog that creates an edit tool as reference $<code>nb</code></p>
+<section id="reply-1" class="level5">
+<h5 class="anchored" data-anchor-id="reply-1">🤖Reply🤖<!-- SOLVEIT_SEPARATOR_7f3a9b2c --></h5>
+<p>Yes — using the <code>pyskills.edit</code> notebook as the pattern, the key idea is:</p>
+<ul>
+<li>the <strong>skill is the exported module</strong></li>
+<li><code>Epx</code> is the <strong>public object</strong> you expose from that module</li>
+<li><code>allow(...)</code> tells <code>pyrun</code> which methods on <code>Epx</code> are safe to call</li>
+</ul>
+<p>If you want to use <strong>this notebook itself</strong> as the skill module, the minimal exported cell is:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb92"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| export</span></span>
+<span id="cb92-2"><a href="#cb92-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pyskills.core <span class="im">import</span> allow</span>
+<span id="cb92-3"><a href="#cb92-3" aria-hidden="true" tabindex="-1"></a><span class="va">__all__</span> <span class="op">=</span> [<span class="st">'Epx'</span>]<span class="op">;</span> allow({Epx: [<span class="st">'toc'</span>, <span class="st">'section'</span>, <span class="st">'images'</span>]})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>A couple of important details from the <code>edit</code> example:</p>
+<ul>
+<li>add an exported <strong>markdown docstring cell</strong> near the top, like that notebook does, describing how <code>Epx(path=None)</code> should be used</li>
+<li>keep the <code>allow(...)</code> cell <strong>after</strong> <code>Epx</code> and its methods are defined</li>
+<li>I’d start with <code>toc</code>, <code>section</code>, and <code>images</code>; add <code>img</code> later, since returning a PIL image is a slightly messier first test</li>
+</ul>
+<p>And if this notebook exports <code>epub_explorer/epx.py</code>, the <code>pyproject.toml</code> entry would look like:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb93"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[project.entry-points.pyskills]</span></span>
+<span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a><span class="dt">epx</span> <span class="op">=</span> <span class="st">"epub_explorer.epx"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>So the quick mental picture is: <code>pyskills.edit</code> exposes editing functions; your notebook would expose the <code>Epx</code> class.</p>
+<p>If you want, next I can help you write the <strong>exact docstring cell text</strong> for this notebook, since that part matters a lot for how <code>pyrun</code> understands the skill.</p>
+<div id="01e490b1" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb94"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pyskills <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a>list_pyskills()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>&lt;unknown&gt;:23: SyntaxWarning: invalid escape sequence '\s'</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre><code>{'epub_explorer.epx': 'EPUB exploration skill for reading `.epub` books directly from the ZIP archive without extraction. It exposes the `Epx` class for opening a book, listing its table of contents, reading sections as markdown, listing &gt; embedded images, and extracting images by internal EPUB path.',
+ 'pyskills.edit': 'Text editing tools for modifying files and ipynb notebook cells. Each operation — insert, replace, delete lines, and string(s) replacement — has both a `file_*` and `cell_*` variant. All return unified diffs showing what changed, or `"none: No changes."`, or `"error: ..."`.',
+ 'pyskills.skill': 'Pyskills is a plugin system allowing Python packages to register "skills" (units of LLM-usable functionality) via standard Python entry points. An LLM host (e.g. solveit) discovers available pyskills without importing them, reads lightweight descriptions via AST inspection, and selectively loads chosen pyskills into context using standard imports.'}</code></pre>
+</div>
+</div>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/kafkasl\.github\.io\/epub-explorer");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/kafkasl/epub-explorer/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
