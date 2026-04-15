@@ -31,3 +31,6 @@ version = {attr = "epub_explorer.__version__"}
 include = ["epub_explorer"]
 
 [tool.nbdev]
+
+[project.entry-points.pyskills]
+"epub_explorer.epx" = "epub_explorer.epx"
