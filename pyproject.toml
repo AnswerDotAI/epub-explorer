@@ -19,7 +19,6 @@ dependencies = [
     "html2text>=2025.4.15",
     "lxml>=6.0.4",
     "pillow>=12.2.0",
-    "pyskills>=0.0.6",
 ]
 
 [project.urls]
@@ -32,6 +31,9 @@ epub_explorer = "epub_explorer._modidx:d"
 [project.scripts]
 epx = "epub_explorer.epx:epx"
 
+[project.entry-points.fastaudit_import_allow]
+epub_explorer = "epub_explorer"
+
 [tool.setuptools.dynamic]
 version = {attr = "epub_explorer.__version__"}
 
@@ -41,4 +43,4 @@ include = ["epub_explorer"]
 [tool.nbdev]
 
 [project.entry-points.pyskills]
-"epub_explorer.epx" = "epub_explorer.epx"
+"epub_explorer.skill" = "epub_explorer.skill"
