@@ -82,14 +82,14 @@ Example:
 
 ## Exporting to notebooks
 
-`epx_to_nbs(book, dest='nbs')` exports each spine section of an `Epx` book as a separate Jupyter notebook under the `dest` directory. Each section's markdown is split into cells on double newlines. Filenames are slugified TOC labels prefixed with zero-padded indices (e.g. `005_chapter_i.ipynb`).
+`book.to_nbs(dest='nbs')` exports each spine section of an `Epx` book as a separate Jupyter notebook under the `dest` directory. Each section's markdown is split into cells on double newlines. Filenames are slugified TOC labels prefixed with zero-padded indices (e.g. `005_chapter_i.ipynb`).
 
 Example:
 
     book = Epx()
-    epx_to_nbs(book, 'my_chapters')
+    book.to_nbs('my_chapters')
 """
 
-__all__ = ['Epx', 'epx_to_nbs']
+__all__ = ['Epx']
 
-from epub_explorer.epx import Epx, epx_to_nbs
+from epub_explorer.epx import Epx
