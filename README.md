@@ -7,10 +7,10 @@
 
 ### Installation
 
-Install latest from the GitHub [repository](https://github.com/kafkasl/epub-explorer):
+Install latest from the GitHub [repository](https://github.com/AnswerDotAI/epub-explorer):
 
 ``` sh
-$ pip install git+https://github.com/kafkasl/epub-explorer.git
+$ pip install git+https://github.com/AnswerDotAI/epub-explorer.git
 ```
 
 ## How to use

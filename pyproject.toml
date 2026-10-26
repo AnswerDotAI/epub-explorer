@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "epub-explorer"
 dynamic = ["version"]
-description = ""
+description = "Read, search, and export EPUBs into notebooks w/o extracting them."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
@@ -22,8 +22,8 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/kafkasl/epub-explorer"
-Documentation = "https://kafkasl.github.io/epub-explorer/"
+Repository = "https://github.com/AnswerDotAI/epub-explorer"
+Documentation = "https://AnswerDotAI.github.io/epub-explorer/"
 
 [project.entry-points.nbdev]
 epub_explorer = "epub_explorer._modidx:d"

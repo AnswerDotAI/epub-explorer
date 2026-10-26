@@ -3,7 +3,7 @@ project:
 
 website:
   title: "epub-explorer"
-  site-url: "https://kafkasl.github.io/epub-explorer"
+  site-url: "https://AnswerDotAI.github.io/epub-explorer"
   description: ""
   repo-branch: main
-  repo-url: "https://github.com/kafkasl/epub-explorer"
+  repo-url: "https://github.com/AnswerDotAI/epub-explorer"

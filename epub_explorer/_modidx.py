@@ -2,8 +2,8 @@
 
 d = { 'settings': { 'branch': 'main',
                 'doc_baseurl': '/epub-explorer',
-                'doc_host': 'https://kafkasl.github.io',
-                'git_url': 'https://github.com/kafkasl/epub-explorer',
+                'doc_host': 'https://AnswerDotAI.github.io',
+                'git_url': 'https://github.com/AnswerDotAI/epub-explorer',
                 'lib_path': 'epub_explorer'},
   'syms': { 'epub_explorer.epx': { 'epub_explorer.epx.Epx': ('epx.html#epx', 'epub_explorer/epx.py'),
                                    'epub_explorer.epx.Epx.__init__': ('epx.html#epx.__init__', 'epub_explorer/epx.py'),
